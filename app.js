@@ -29,7 +29,7 @@ app.post('/shorten', async (req, res) => {
        const connection = await pool.getConnection();
        
        // Check if a short URL already exists for the original URL
-       const [existingUrls] = await connection.query('SELECT * FROM short_urls WHERE original_url = ?', [original_url]);
+       const [existingUrls] = await connection.query('SELECT * FROM urls WHERE original_url = ?', [original_url]);
 
        if (existingUrls.length > 0) {
            // If a short URL exists, return it
@@ -42,7 +42,7 @@ app.post('/shorten', async (req, res) => {
            while (!isUnique) {
                short_url = shortid.generate();
                try {
-                   const [existingShortUrls] = await connection.query('SELECT * FROM short_urls WHERE short_url = ?', [short_url]);
+                   const [existingShortUrls] = await connection.query('SELECT * FROM urls WHERE short_url = ?', [short_url]);
                    if (existingShortUrls.length === 0) {
                        isUnique = true;
                    }
@@ -54,7 +54,7 @@ app.post('/shorten', async (req, res) => {
            }
 
            // Insert the new short URL into the database
-           await connection.query('INSERT INTO short_urls (original_url, short_url) VALUES (?, ?)', [original_url, short_url]);
+           await connection.query('INSERT INTO urls (original_url, short_url) VALUES (?, ?)', [original_url, short_url]);
            connection.release();
 
            res.json({
@@ -75,7 +75,7 @@ app.post('/shorten', async (req, res) => {
 app.get('/urls', async (req, res) => {
    try {
        const connection = await pool.getConnection();
-       const [results] = await connection.query('SELECT * FROM short_urls');
+       const [results] = await connection.query('SELECT * FROM urls');
        connection.release();
        res.json(results);
    } catch (error) {
@@ -90,14 +90,14 @@ app.get('/:short_url', async (req, res) => {
 
    try {
        const connection = await pool.getConnection();
-       const [results] = await connection.query('SELECT original_url FROM short_urls WHERE short_url = ?', [short_url]);
+       const [results] = await connection.query('SELECT original_url FROM urls WHERE short_url = ?', [short_url]);
        
        if (results.length === 0) {
            res.status(404).json({ error: 'URL not found' });
        } else {
            const original_url = results[0].original_url;
            // Update the click count
-           await connection.query('UPDATE short_urls SET click_count = click_count + 1 WHERE short_url = ?', [short_url]);
+           await connection.query('UPDATE urls SET click_count = click_count + 1 WHERE short_url = ?', [short_url]);
            connection.release();
            res.redirect(original_url);
        }
