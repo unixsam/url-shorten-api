@@ -4,6 +4,9 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const shortid = require('shortid');
 
+// Configure shortid to use a custom character set and generate IDs with a specific length
+shortid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*!');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 

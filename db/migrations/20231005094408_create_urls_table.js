@@ -7,6 +7,7 @@ exports.up = function(knex) {
         table.increments('id').primary();
         table.string('original_url').notNullable();
         table.string('short_url').notNullable().unique();
+        table.integer('click_count').defaultTo(0); // Add click_count column with a default value of 0
         table.timestamps(true, true);
     });
 };
